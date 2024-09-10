@@ -19,7 +19,7 @@ const
   GOAL_POS_Y: int = 4
   ELITE_SIZE: int = 25
   MUTATION_RATE: float = 0.02
-  GENOME_STRING_LENGTH: int = 8
+  GENOME_STRING_LENGTH: int = 24
   AMOUNT_GENERATIONS: int = 100
   MAZE_WIDTH: int = 8
   MAZE_HEIGHT: int = 8
@@ -35,7 +35,7 @@ maze = [
   [1, 0, 0, 0, 0, 0, 0, 1],
   [1, 0, 1, 1, 1, 0, 1, 1],
   [1, 0, 0, 2, 1, 0, 0, 1],
-  [1, 0, 1, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 1],
   [1, 1, 1, 0, 0, 0, 0, 1],
   [1, 0, 0, 0, 1, 1, 0, 1],
   [1, 1, 1, 1, 1, 1, 1, 1]
@@ -54,7 +54,7 @@ proc pickRandChromosomeInstruction(): Chromosome =
 
 proc generateRandomGenome(): seq[Chromosome] =
   var genome: seq[Chromosome]
-  for i in countup(0, 7):
+  for i in countup(0, GENOME_STRING_LENGTH):
     genome.add(pickRandChromosomeInstruction())
   return genome
 
@@ -115,8 +115,7 @@ proc breedEliteChildren(eliteAgents: seq[Agent]): seq[Agent] =
     eliteChildren.add(child2)
     i += 2 
 
-  return eliteAgents
-
+  return eliteChildren
 
 proc mutateGene(gene: Chromosome): Chromosome =
   let allGenes = [Chromosome.UP, Chromosome.RIGHT, Chromosome.DOWN, Chromosome.LEFT]
@@ -225,10 +224,16 @@ proc moveAgents() =
 
 
 proc resetAgentsParameters() =
+  echo "[i] RESETTING AGENTS"
   for i in 0 ..< population.len:
     population[i].x = START_POS_X
     population[i].y = START_POS_Y
     population[i].fitness = 0.0
+
+proc updatePopulation(newGeneration: seq[Agent]) =
+  # Replace the current population with new generation
+  population.setLen(0)  # Clear the current population
+  population.add(newGeneration)  # Add the new generation
 
 
 proc showResults() =
@@ -237,13 +242,15 @@ proc showResults() =
 
 proc main() =
   var generation = 0
-  var trainingIsCompleted = generation == AMOUNT_GENERATIONS
 
   # Initializes 50 Agents for training
   initPopulation()
 
   # Render loop
-  while true:
+  while generation < AMOUNT_GENERATIONS:
+    echo "Generation Nr. " & $generation & " started..."
+
+    # Move Agents to next position
     moveAgents()
 
     # Calculate fitness of agents
@@ -255,19 +262,18 @@ proc main() =
     # Breed elite children
     var eliteChildren = breedEliteChildren(eliteAgents)
 
-    # Mutate agents chromosomes with chance of .02%
-    # increasing exploration rate in path finding 
+    # Mutate agents chromosomes with a chance of 0.02%
     mutateEliteGivenChildrenChromosomes(addr eliteChildren)
 
-    # End training process
-    if trainingIsCompleted:
-      break
+    # Replace the current population with new generation
+    updatePopulation(eliteChildren)
 
     # Reset position and fitness
     resetAgentsParameters()
 
     # Jump to next generation
     inc(generation)
+
 
   # Show results
   showResults()
