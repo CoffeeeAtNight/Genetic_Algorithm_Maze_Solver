@@ -45,4 +45,12 @@ The maze is represented as an 8x8 grid:
 
 ---
 
+## Todo:
+
+- **Fix problem where generation stops after some time**
+- **Improve fitness function to prevent local maximum**
+- **Integrate OpenGL to better represent generations**
+
+---
+
 ![image](https://github.com/user-attachments/assets/e8d83414-d388-45f2-ac5b-3571967c034d)
